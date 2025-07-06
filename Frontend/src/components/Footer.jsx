@@ -1,5 +1,5 @@
 
-import MultiflyLogo from "../assets/Multifly_Logo.png";
+import MultiflyLogo from "../assets/Multifly_logo.png";
 import FacebookIcon from "../assets/facebook.png";
 import InstagramIcon from"../assets/instagram.png";
 import LinkedInIcon from "../assets/linkedin.png";
