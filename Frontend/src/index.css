@@ -1,0 +1,59 @@
+
+@import "tailwindcss";
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+
+/* For Chrome, Safari, and Edge */
+.absolute::-webkit-scrollbar {
+  width: 6px;
+}
+
+.absolute::-webkit-scrollbar-track {
+  background: #2d3748; /* gray-800 */
+}
+
+.absolute::-webkit-scrollbar-thumb {
+  background: #4a5568; /* gray-600 */
+  border-radius: 3px;
+}
+
+.absolute::-webkit-scrollbar-thumb:hover {
+  background: #718096; /* gray-500 */
+}
+
+.custom-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scroll::-webkit-scrollbar-thumb {
+  background: #4B5563;
+  border-radius: 4px;
+}
+.custom-scroll::-webkit-scrollbar-track {
+  background: #1F2937;
+}
+
+/* Custom CSS for hiding scrollbars */
+.no-scroll {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+.no-scroll::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, and Opera */
+}
+
+/*alert  modal for getting satrted button*/
+@keyframes slide-in {
+  from { transform: translateY(-20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.animate-slide-in {
+  animation: slide-in 0.3s ease-out;
+}

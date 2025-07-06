@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flight Booking with Razorpay</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        pre { background: #f4f4f4; padding: 10px; border-radius: 5px; max-height: 400px; overflow-y: auto; }
+        button { padding: 10px 20px; background-color: #F37254; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background-color: #e65b3c; }
+    </style>
+</head>
+<body>
+    <h2>Flight Booking</h2>
+    <button onclick="handleBookFlight()">Book Flight</button>
+    <div id="response-container">
+        <h3>Booking Response:</h3>
+        <pre id="response-output"></pre>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        const BASE_URL = 'http://localhost:3000';
+        const TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MjksInBob25lIjoiODA4MDcxOTY0NyIsImVtYWlsIjoicjc4MTEzNDEwQGdtYWlsLmNvbSIsImlhdCI6MTc0Mzk2MDI3MSwiZXhwIjoxNzQzOTYzODcxfQ.fDIjYSuzy2cA1nrERMMc00uCiF2whP9RzhNHPZlsqJE'; // Replace with JWT
+        const RAZORPAY_KEY_ID = 'rzp_test_fG53Ux0WVcZCMK'; // Replace with Razorpay key_id
+
+        let bookingRequestData = null;
+
+        function loadRazorpayScript() {
+            return new Promise((resolve) => {
+                const script = document.createElement('script');
+                script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+                script.onload = () => resolve(true);
+                script.onerror = () => resolve(false);
+                document.body.appendChild(script);
+            });
+        }
+
+        async function handleBookFlight() {
+            try {
+                const requestBody = {
+                    pricedOffer: {
+                        type: "flight-offer",
+                        id: "1",
+                        source: "GDS",
+                        instantTicketingRequired: false,
+                        nonHomogeneous: false,
+                        paymentCardRequired: false,
+                        lastTicketingDate: "2025-04-01",
+                        itineraries: [
+                            {
+                                segments: [
+                                    {
+                                        departure: { iataCode: "LHR", terminal: "4", at: "2025-04-01T19:45:00" },
+                                        arrival: { iataCode: "CDG", terminal: "2E", at: "2025-04-01T22:00:00" },
+                                        carrierCode: "AF",
+                                        number: "1181",
+                                        aircraft: { code: "223" },
+                                        operating: { carrierCode: "AF" },
+                                        duration: "PT1H15M",
+                                        id: "19",
+                                        numberOfStops: 0,
+                                        co2Emissions: [{ weight: 47, weightUnit: "KG", cabin: "ECONOMY" }]
+                                    }
+                                ]
+                            },
+                            {
+                                segments: [
+                                    {
+                                        departure: { iataCode: "CDG", terminal: "2E", at: "2025-04-05T18:15:00" },
+                                        arrival: { iataCode: "LHR", terminal: "4", at: "2025-04-05T18:35:00" },
+                                        carrierCode: "AF",
+                                        number: "1180",
+                                        aircraft: { code: "223" },
+                                        operating: { carrierCode: "AF" },
+                                        duration: "PT1H20M",
+                                        id: "75",
+                                        numberOfStops: 0,
+                                        co2Emissions: [{ weight: 47, weightUnit: "KG", cabin: "ECONOMY" }]
+                                    }
+                                ]
+                            }
+                        ],
+                        price: { currency: "EUR", total: "199.13", base: "64.00", grandTotal: "199.13", billingCurrency: "EUR" },
+                        pricingOptions: { fareType: ["PUBLISHED"], includedCheckedBagsOnly: false },
+                        validatingAirlineCodes: ["AF"],
+                        travelerPricings: [
+                            {
+                                travelerId: "1",
+                                fareOption: "STANDARD",
+                                travelerType: "ADULT",
+                                price: { currency: "EUR", total: "199.13", base: "64.00" },
+                                fareDetailsBySegment: [
+                                    { segmentId: "19", cabin: "ECONOMY", fareBasis: "TYS0AALA", brandedFare: "LIGHT", class: "T", includedCheckedBags: { quantity: 0 } },
+                                    { segmentId: "75", cabin: "ECONOMY", fareBasis: "TYS0AALA", brandedFare: "LIGHT", class: "T", includedCheckedBags: { quantity: 0 } }
+                                ]
+                            }
+                        ]
+                    },
+                    travelers: [
+                        {
+                            dateOfBirth: "1990-01-01",
+                            name: { firstName: "John", lastName: "Doe" },
+                            gender: "MALE",
+                            email: "john.doe@example.com",
+                            phones: [{ deviceType: "MOBILE", countryCallingCode: "33", number: "1234567890" }]
+                        }
+                    ],
+                    addons: { selectedSeat: null, baggage: false, travelInsurance: false, refundableBooking: false },
+                    gstin: null
+                };
+
+                bookingRequestData = requestBody;
+
+                const response = await axios.post(`${BASE_URL}/api/flights/book`, requestBody, {
+                    headers: { Authorization: `Bearer ${TOKEN}`, 'Content-Type': 'application/json' }
+                });
+
+                document.getElementById('response-output').textContent = JSON.stringify(response.data, null, 2);
+                handleRazorpayPayment(response.data);
+            } catch (error) {
+                console.error('Booking error:', error.response?.data || error.message);
+                document.getElementById('response-output').textContent = JSON.stringify(error.response?.data || { error: error.message }, null, 2);
+            }
+        }
+
+        async function handleRazorpayPayment(bookingData) {
+            const { paymentOrder, bookingId } = bookingData;
+
+            const options = {
+                key: RAZORPAY_KEY_ID,
+                amount: paymentOrder.amount,
+                currency: paymentOrder.currency,
+                name: 'Flight Booking',
+                description: 'Payment for flight booking',
+                order_id: paymentOrder.id,
+                handler: async function (response) {
+                    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = response;
+
+                    console.log('Razorpay Order ID:', razorpay_order_id);
+                    console.log('Razorpay Payment ID:', razorpay_payment_id);
+                    console.log('Razorpay Signature:', razorpay_signature);
+
+                    try {
+                        const confirmBody = {
+                            paymentId: razorpay_payment_id,
+                            orderId: razorpay_order_id,
+                            signature: razorpay_signature,
+                            pricedOffer: bookingRequestData.pricedOffer,
+                            travelers: bookingRequestData.travelers,
+                            bookingId: bookingId
+                        };
+
+                        const confirmResponse = await axios.post(`${BASE_URL}/api/flights/confirm-booking`, confirmBody, {
+                            headers: { Authorization: `Bearer ${TOKEN}`, 'Content-Type': 'application/json' }
+                        });
+
+                        console.log('Booking confirmed:', confirmResponse.data);
+                        document.getElementById('response-output').textContent = JSON.stringify(confirmResponse.data, null, 2);
+                    } catch (error) {
+                        console.error('Confirm booking error:', error.response?.data || error.message);
+                        // Log detailed error if available
+                        if (error.response?.data?.error === "Failed to create booking with Amadeus" && error.response?.data?.details) {
+                            console.error('Amadeus error details:', error.response.data.details);
+                        }
+                        document.getElementById('response-output').textContent = JSON.stringify(error.response?.data || { error: error.message }, null, 2);
+                    }
+                },
+                prefill: {
+                    name: 'John Doe',
+                    email: 'john.doe@example.com',
+                    contact: '331234567890'
+                },
+                theme: { color: '#F37254' }
+            };
+
+            const rzp = new window.Razorpay(options);
+            rzp.open();
+        }
+
+        window.onload = async () => {
+            const loaded = await loadRazorpayScript();
+            if (!loaded) {
+                console.error('Failed to load Razorpay SDK');
+                document.getElementById('response-output').textContent = 'Failed to load Razorpay SDK';
+            }
+        };
+    </script>
+</body>
+</html>
