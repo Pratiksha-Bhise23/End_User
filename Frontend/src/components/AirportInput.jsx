@@ -21,7 +21,7 @@ const AirportInput = ({ label, value, setValue }) => {
 
     try {
       setError("");
-      const response = await axios.get("http://localhost:3000/api/flights/live-airport-search", {
+      const response = await axios.get("https://end-user.onrender.com/api/flights/live-airport-search", {
         params: { term: query },
       });
 

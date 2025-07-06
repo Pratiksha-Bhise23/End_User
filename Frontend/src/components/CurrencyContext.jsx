@@ -1,140 +1,5 @@
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // /* eslint-disable no-unused-vars */
 // import React, { createContext, useState, useEffect } from 'react';
 // import axios from 'axios';
@@ -153,7 +18,7 @@
 //   useEffect(() => {
 //     const fetchCountries = async () => {
 //       try {
-//         const response = await axios.get('http://localhost:3000/api/countries');
+//         const response = await axios.get('https://end-user.onrender.com/api/countries');
 //         setCountries(response.data.countries);
 //         // Set default country (optional)
 //         setSelectedCountry(response.data.countries[0]);
@@ -203,7 +68,7 @@
 //   useEffect(() => {
 //     const fetchCountries = async () => {
 //       try {
-//         const response = await axios.get('http://localhost:3000/api/countries');
+//         const response = await axios.get('https://end-user.onrender.com/api/countries');
 //         setCountries(response.data.countries);
         
 //         // Load selected country from localStorage
@@ -277,7 +142,7 @@ export const CurrencyProvider = ({ children }) => {
   useEffect(() => {
     const fetchCountries = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/api/countries');
+        const response = await axios.get('https://end-user.onrender.com/api/countries');
         setCountries(response.data.countries);
         
         // Load selected country from localStorage
